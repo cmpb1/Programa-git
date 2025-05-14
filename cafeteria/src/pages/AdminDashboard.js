@@ -3,6 +3,8 @@ import UserTable from '../components/UserTable';
 import EmployeeTable from '../components/EmployeeTable';
 import UserForm from '../components/UserForm';
 import EmployeeForm from '../components/EmployeeForm';
+import { Container, Row, Col, Button } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function AdminDashboard() {
     const [users, setUsers] = useState([]);
@@ -110,7 +112,7 @@ function AdminDashboard() {
     };
 
     const createEmployee = async (employeeData) => {
-        
+
         try {
             const response = await fetch('http://localhost:3001/empleados', {
                 method: 'POST',
@@ -178,55 +180,82 @@ function AdminDashboard() {
 
     return (
         <div>
-            <h2>Módulo de Administración</h2>
+            <header style={{ backgroundColor: 'gray', color: 'white', padding: '10px', textAlign: 'center', height: "9vh" }}>
+                <h2>Módulo de Administración</h2>
+            </header>
 
-            <div>
-                <h3>Usuarios</h3>
-                <button onClick={() => setIsUserFormOpen(true)}>Crear Usuario</button>
-                <UserTable
-                    users={users}
-                    onEdit={(id) => {
-                        const user = users.find(user => user.id === id);
-                        setSelectedUser(user);
-                        setIsUserFormOpen(true);
-                    }}
-                    onDelete={deleteUser}
-                />
+            <Container>
+                <Row className="mt-4">
+                    <Col xs={12}>
+                        <h3>Usuarios</h3>
+                    </Col>
+                    <Col xs={12} className="mb-3">
+                        <UserTable
+                            users={users}
+                            onEdit={(id) => {
+                                const user = users.find(user => user.id === id);
+                                setSelectedUser(user);
+                                setIsUserFormOpen(true);
+                            }}
+                            onDelete={deleteUser}
+                        />
+                    </Col>
+                    <Col xs={12} className="text-center mb-3">
+                        <Button variant="primary" onClick={() => setIsUserFormOpen(true)}>Crear Usuario</Button>
+                    </Col>
+                </Row>
+
                 {isUserFormOpen && (
-                    <UserForm
-                        user={selectedUser}
-                        onSave={selectedUser ? (userData) => updateUser(selectedUser.id, userData) : createUser}
-                        onCancel={() => {
-                            setIsUserFormOpen(false);
-                            setSelectedUser(null);
-                        }}
-                    />
+                    <Row className="justify-content-center mt-4">
+                        <Col xs={12} md={8} lg={6}>
+                            <UserForm
+                                user={selectedUser}
+                                onSave={selectedUser ? (userData) => updateUser(selectedUser.id, userData) : createUser}
+                                onCancel={() => {
+                                    setIsUserFormOpen(false);
+                                    setSelectedUser(null);
+                                }}
+                            />
+                        </Col>
+                    </Row>
                 )}
-            </div>
 
-            <div>
-                <h3>Empleados</h3>
-                <button onClick={() => setIsEmployeeFormOpen(true)}>Crear Empleado</button>
-                <EmployeeTable
-                    employees={employees}
-                    onEdit={(id) => {
-                        const employee = employees.find(employee => employee.id === id);
-                        setSelectedEmployee(employee);
-                        setIsEmployeeFormOpen(true);
-                    }}
-                    onDelete={deleteEmployee}
-                />
+                <Row className="mt-4">
+                    <Col xs={12}>
+                        <h3>Empleados</h3>
+                    </Col>
+                    <Col xs={12} className="mb-3">
+                        <EmployeeTable
+                            employees={employees}
+                            onEdit={(id) => {
+                                const employee = employees.find(employee => employee.id === id);
+                                setSelectedEmployee(employee);
+                                setIsEmployeeFormOpen(true);
+                            }}
+                            onDelete={deleteEmployee}
+                        />
+                    </Col>
+                    <Col xs={12} className="text-center mb-3">
+                        <Button variant="primary" onClick={() => setIsEmployeeFormOpen(true)}>Crear Empleado</Button>
+                    </Col>
+                </Row>
+
+
                 {isEmployeeFormOpen && (
-                    <EmployeeForm
-                        employee={selectedEmployee}
-                        onSave={selectedEmployee ? (employeeData) => updateEmployee(selectedEmployee.id, employeeData) : createEmployee}
-                        onCancel={() => {
-                            setIsEmployeeFormOpen(false);
-                            setSelectedEmployee(null);
-                        }}
-                    />
+                    <Row className="justify-content-center mt-4">
+                        <Col xs={12} md={8} lg={6}>
+                            <EmployeeForm
+                                employee={selectedEmployee}
+                                onSave={selectedEmployee ? (employeeData) => updateEmployee(selectedEmployee.id, employeeData) : createEmployee}
+                                onCancel={() => {
+                                    setIsEmployeeFormOpen(false);
+                                    setSelectedEmployee(null);
+                                }}
+                            />
+                        </Col>
+                    </Row>
                 )}
-            </div>
+            </Container>
         </div>
     );
 }

@@ -1,8 +1,10 @@
 import React from 'react';
+import { Table, Button } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css'; // Asegúrate de importar los estilos de Bootstrap
 
 function UserTable({ users, onEdit, onDelete }) {
     return (
-        <table>
+        <Table striped bordered hover responsive> {/* Añadido el prop responsive */}
             <thead>
                 <tr>
                     <th>ID</th>
@@ -20,13 +22,17 @@ function UserTable({ users, onEdit, onDelete }) {
                         <td>{user.password}</td>
                         <td>{user.rol}</td>
                         <td>
-                            <button onClick={() => onEdit(user.id)}>Editar</button>
-                            <button onClick={() => onDelete(user.id)}>Eliminar</button>
+                            <Button variant="primary" size="sm" className="me-2" onClick={() => onEdit(user.id)}> {/* Añadido className="me-2" */}
+                                Editar
+                            </Button>
+                            <Button variant="danger" size="sm" onClick={() => onDelete(user.id)}>
+                                Eliminar
+                            </Button>
                         </td>
                     </tr>
                 ))}
             </tbody>
-        </table>
+        </Table>
     );
 }
 

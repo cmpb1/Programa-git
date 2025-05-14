@@ -1,8 +1,10 @@
 import React from 'react';
+import { Table, Button } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function PedidoTable({ pedidos, onEdit, onDelete }) {
     return (
-        <table>
+        <Table striped bordered hover responsive>
             <thead>
                 <tr>
                     <th>ID</th>
@@ -22,13 +24,17 @@ function PedidoTable({ pedidos, onEdit, onDelete }) {
                         <td>{pedido.total}</td>
                         <td>{pedido.estado}</td>
                         <td>
-                            <button onClick={() => onEdit(pedido.id)}>Editar</button>
-                            <button onClick={() => onDelete(pedido.id)}>Eliminar</button>
+                            <Button variant="primary" size="sm" className="me-2" onClick={() => onEdit(pedido.id)}>
+                                Editar
+                            </Button>
+                            <Button variant="danger" size="sm" onClick={() => onDelete(pedido.id)}>
+                                Eliminar
+                            </Button>
                         </td>
                     </tr>
                 ))}
             </tbody>
-        </table>
+        </Table>
     );
 }
 

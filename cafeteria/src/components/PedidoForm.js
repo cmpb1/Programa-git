@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { Form, Button } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-function PedidoForm({ pedido, onSave, onCancel, loggedInUser }) { // Recibir loggedInUser
+function PedidoForm({ pedido, onSave, onCancel, loggedInUser }) {
     const [id_usuario, setIdUsuario] = useState('');
     const [detalles, setDetalles] = useState([{ id_producto: '', cantidad: 1 }]);
     const [productosDisponibles, setProductosDisponibles] = useState([]);
@@ -23,10 +25,11 @@ function PedidoForm({ pedido, onSave, onCancel, loggedInUser }) { // Recibir log
         fetchProductos();
         if (pedido) {
             setIdUsuario(pedido.id_usuario);
+            setDetalles(pedido.detalles || [{ id_producto: '', cantidad: 1 }]); // Inicializar detalles
         } else {
-            setIdUsuario(loggedInUser.id); // Usar el ID del usuario logueado
+            setIdUsuario(loggedInUser.id);
         }
-    }, [pedido, loggedInUser]); // Agregar loggedInUser como dependencia
+    }, [pedido, loggedInUser]);
 
     const handleDetalleChange = (index, field, value) => {
         const nuevosDetalles = [...detalles];
@@ -43,48 +46,61 @@ function PedidoForm({ pedido, onSave, onCancel, loggedInUser }) { // Recibir log
         setDetalles(nuevosDetalles);
     };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const pedidoData = {
-        id_usuario: id_usuario,
-        detalles: detalles,
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        const pedidoData = {
+            id_usuario: id_usuario,
+            detalles: detalles.filter(detalle => detalle.id_producto !== '') // Filtrar detalles vacíos
+        };
+        onSave(pedidoData);
     };
-    console.log("PedidoForm - Datos a enviar: ", pedidoData);
-    onSave(pedidoData);
-};
 
     return (
-        <form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit}>
             {detalles.map((detalle, index) => (
                 <div key={index}>
-                    <label>Producto:</label>
-                    <select
-                        value={detalle.id_producto}
-                        onChange={(e) => handleDetalleChange(index, 'id_producto', e.target.value)}
-                    >
-                        <option value="">Seleccionar Producto</option>
-                        {productosDisponibles.map(producto => (
-                            <option key={producto.id} value={producto.id}>
-                                {producto.nombre}
-                            </option>
-                        ))}
-                    </select>
+                    <Form.Group className="mb-3" controlId={`formProducto${index}`}>
+                        <Form.Label>Producto:</Form.Label>
+                        <Form.Select
+                            value={detalle.id_producto}
+                            onChange={(e) => handleDetalleChange(index, 'id_producto', e.target.value)}
+                        >
+                            <option value="">Seleccionar Producto</option>
+                            {productosDisponibles.map(producto => (
+                                <option key={producto.id} value={producto.id}>
+                                    {producto.nombre}
+                                </option>
+                            ))}
+                        </Form.Select>
+                    </Form.Group>
 
-                    <label>Cantidad:</label>
-                    <input
-                        type="number"
-                        value={detalle.cantidad}
-                        onChange={(e) => handleDetalleChange(index, 'cantidad', e.target.value)}
-                    />
+                    <Form.Group className="mb-3" controlId={`formCantidad${index}`}>
+                        <Form.Label>Cantidad:</Form.Label>
+                        <Form.Control
+                            type="number"
+                            value={detalle.cantidad}
+                            onChange={(e) => handleDetalleChange(index, 'cantidad', e.target.value)}
+                        />
+                    </Form.Group>
 
-                    <button type="button" onClick={() => eliminarDetalle(index)}>Eliminar</button>
+                    <Button variant="outline-danger" size="sm" onClick={() => eliminarDetalle(index)}>
+                        Eliminar
+                    </Button>
                 </div>
             ))}
 
-            <button type="button" onClick={agregarDetalle}>Agregar Producto</button>
-            <button type="submit">Guardar Pedido</button>
-            <button type="button" onClick={onCancel}>Cancelar</button>
-        </form>
+            <div className="text-center mt-3">
+                <Button variant="secondary" className="me-2" onClick={agregarDetalle}>
+                    Agregar Producto
+                </Button>
+                <Button variant="primary" type="submit" className="me-2">
+                    Guardar Pedido
+                </Button>
+                <Button variant="danger" onClick={onCancel}>
+                    Cancelar
+                </Button>
+            </div>
+        </Form>
     );
 }
 
