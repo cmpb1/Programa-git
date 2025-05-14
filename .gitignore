@@ -1,0 +1,23 @@
+# Node
+node_modules/
+.env
+
+# React
+cafeteria/node_modules/
+cafeteria/.env
+cafeteria/build/
+
+# MySQL dumps temporales
+*.sql~
+*.db
+
+# Logs
+*.log
+
+# Sistemas operativos / editores
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Otros
+dist/
