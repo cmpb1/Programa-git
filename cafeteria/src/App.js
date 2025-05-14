@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import LoginForm from './components/LoginForm';
 import AdminDashboard from './pages/AdminDashboard';
+import CafeteroDashboard from './pages/CafeteroDashboard';
 
 function App() {
     const [loggedInUser, setLoggedInUser] = useState(null);
@@ -22,6 +23,7 @@ function App() {
             }
 
             const data = await response.json();
+            
             setLoggedInUser(data);
         } catch (error) {
             console.error('Error al iniciar sesión:', error);
@@ -44,14 +46,18 @@ function App() {
     }
 
     return (
-        <div>
-            {loggedInUser ? (
+    <div>
+        {loggedInUser ? (
+            loggedInUser.rol === 'admin' ? (
                 <AdminDashboard />
-            ) : (
-                <LoginForm onLogin={handleLogin} />
-            )}
-        </div>
-    );
+            ) : loggedInUser.rol === 'cafetero' ? (
+                <CafeteroDashboard loggedInUser={loggedInUser} /> // Pasar loggedInUser
+            ) : null
+        ) : (
+            <LoginForm onLogin={handleLogin} />
+        )}
+    </div>
+);
 }
 
 export default App;

@@ -186,6 +186,123 @@ app.delete('/empleados/:id', async (req, res) => {
     await deleteEntity('empleados', req.params.id, res, 'id');
 });
 
+app.post('/pedidos', async (req, res) => {
+    const { id_usuario, detalles } = req.body;
+    console.log('Petición recibida para crear pedido:', req.body);
+
+    try {
+        const [pedidoResult] = await db.promise().query(
+            'INSERT INTO pedidos (id_usuario, fecha_hora, total, estado) VALUES (?, NOW(), 0, "Pendiente")',
+            [id_usuario]
+        );
+        const id_pedido = pedidoResult.insertId;
+        console.log('Resultado de INSERT en pedidos:', pedidoResult);
+
+        let total_pedido = 0;
+
+        for (const detalle of detalles) {
+            const { id_producto, cantidad } = detalle;
+            console.log('Procesando detalle:', detalle);
+
+            const [productoRows] = await db.promise().query(
+                'SELECT precio FROM productos WHERE id = ?',
+                [id_producto]
+            );
+            if (productoRows.length === 0) {
+                throw new Error(`Producto con ID ${id_producto} no encontrado`);
+            }
+            const precio_producto = productoRows[0].precio;
+            const subtotal = precio_producto * cantidad;
+            total_pedido += subtotal;
+            console.log('Subtotal calculado:', subtotal);
+
+            const [detalleResult] = await db.promise().query(
+                'INSERT INTO detalles_pedido (id_pedido, id_producto, cantidad, subtotal) VALUES (?, ?, ?, ?)',
+                [id_pedido, id_producto, cantidad, subtotal]
+            );
+            console.log('Resultado de INSERT en detalles_pedidos:', detalleResult);
+        }
+
+        await db.promise().query(
+            'UPDATE pedidos SET total = ? WHERE id = ?',
+            [total_pedido, id_pedido]
+        );
+
+        const [pedidoCompleto] = await db.promise().query(
+            'SELECT * FROM pedidos WHERE id = ?',
+            [id_pedido]
+        );
+        console.log('Pedido Completo:', pedidoCompleto);
+
+        res.status(201).json(pedidoCompleto[0]);
+    } catch (error) {
+        console.error('Error al crear el pedido:', error);
+        res.status(500).json({ error: 'Error al crear el pedido' });
+    }
+});
+app.put('/pedidos/:id', async (req, res) => {
+    const id = req.params.id;
+    const { detalles } = req.body;
+
+    try {
+        // Eliminar detalles anteriores
+        await db.promise().query('DELETE FROM detalles_pedido WHERE id_pedido = ?', [id]);
+
+        let total_pedido = 0;
+
+        for (const detalle of detalles) {
+            const { id_producto, cantidad } = detalle;
+            const [productoRows] = await db.promise().query(
+                'SELECT precio FROM productos WHERE id = ?',
+                [id_producto]
+            );
+
+            if (productoRows.length === 0) {
+                throw new Error(`Producto con ID ${id_producto} no encontrado`);
+            }
+
+            const precio_producto = productoRows[0].precio;
+            const subtotal = precio_producto * cantidad;
+            total_pedido += subtotal;
+
+            await createEntity('detalles_pedido', {
+                id_pedido: id,
+                id_producto,
+                cantidad,
+                subtotal
+            }, res); // puedes capturar errores aquí si lo deseas
+        }
+
+        await updateEntity('pedidos', id, { total: total_pedido }, res);
+    } catch (error) {
+        console.error('Error al actualizar pedido:', error);
+        res.status(500).json({ error: 'Error al actualizar el pedido' });
+    }
+});
+app.delete('/pedidos/:id', async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        await db.promise().query('DELETE FROM detalles_pedido WHERE id_pedido = ?', [id]);
+        await deleteEntity('pedidos', id, res);
+    } catch (error) {
+        console.error('Error al eliminar pedido:', error);
+        res.status(500).json({ error: 'Error al eliminar el pedido' });
+    }
+});
+app.get('/pedidos', async (req, res) => {
+    const id_usuario = req.query.id_usuario;
+
+    if (id_usuario) {
+        await getEntities('pedidos', res, 'id_usuario = ?', [id_usuario]);
+    } else {
+        await getEntities('pedidos', res);
+    }
+});
+// Obtener todos los productos
+app.get('/productos', async (req, res) => {
+    await getEntities('productos', res);
+});
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`Servidor de la API escuchando en el puerto ${PORT}`);
